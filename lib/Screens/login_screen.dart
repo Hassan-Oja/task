@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:uber/Screens/signin_screen.dart';
 
@@ -69,44 +70,37 @@ class LoginScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                          (predicate) => false,
-                    );
+                  onPressed: () async {
+                    final isValid = _formKey.currentState!.validate();
+                    if (isValid) {
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: emailController.text,
+                          password: passwordController.text,
+                        );
+                        // todo : go to home screen || Success login
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                              (predicate) => false,
+                        );
+                      } on FirebaseAuthException catch (e) {
+                        print("--------------------${e.code}--------------");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.code,
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        print(
+                          "==========> error while signing up ${e.toString()}",
+                        );
+                      }
+                    }
                   },
-                  // onPressed: () async {
-                  //   final isValid = _formKey.currentState!.validate();
-                  //   if (isValid) {
-                  //     try {
-                  //       await FirebaseAuth.instance.signInWithEmailAndPassword(
-                  //         email: emailController.text,
-                  //         password: passwordController.text,
-                  //       );
-                  //       // todo : go to home screen || Success login
-                  //       Navigator.pushAndRemoveUntil(
-                  //         context,
-                  //         MaterialPageRoute(builder: (context) => HomeScreen()),
-                  //             (predicate) => false,
-                  //       );
-                  //     } on FirebaseAuthException catch (e) {
-                  //       print("--------------------${e.code}--------------");
-                  //       ScaffoldMessenger.of(context).showSnackBar(
-                  //         SnackBar(
-                  //           content: Text(
-                  //             e.code,
-                  //             style: TextStyle(fontSize: 20),
-                  //           ),
-                  //         ),
-                  //       );
-                  //     } catch (e) {
-                  //       print(
-                  //         "==========> error while signing up ${e.toString()}",
-                  //       );
-                  //     }
-                  //   }
-                  // },
                   child: Text("Log In", style: TextStyle(fontSize: 20)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepPurple,

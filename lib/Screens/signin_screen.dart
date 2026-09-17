@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:uber/Screens/home_screen.dart';
 
@@ -106,62 +108,57 @@ class SigninScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => HomeScreen(),
-                              ),
-                                  (predicate) => false,
-                            );
-                          },
+                          onPressed: () async {
+                            final isValid = _formKey.currentState!.validate();
+                            if (isValid) {
+                              try {
+                                final user = await FirebaseAuth.instance
+                                    .createUserWithEmailAndPassword(
+                                  email: emailController.text.trim(),
+                                  password: passwordController.text,
+                                );
 
-                          // onPressed: () async {
-                          //   final isValid = _formKey.currentState!.validate();
-                          //   if (isValid) {
-                          //     try {
-                          //       final user = await FirebaseAuth.instance
-                          //           .createUserWithEmailAndPassword(
-                          //         email: emailController.text,
-                          //         password: passwordController.text,
-                          //       );
-                          //
-                          //       final userID = user.user!.uid;
-                          //       // todo store the user in firebase
-                          //       await FirebaseFirestore.instance
-                          //           .collection("users")
-                          //           .doc(userID)
-                          //           .set({
-                          //         "fullName": fullNameController.text,
-                          //         "email": emailController.text,
-                          //       });
-                          //
-                          //       // todo : go to home screen || Success Sign in
-                          //       Navigator.pushAndRemoveUntil(
-                          //         context,
-                          //         MaterialPageRoute(
-                          //           builder: (context) => HomeScreen(),
-                          //         ),
-                          //             (predicate) => false,
-                          //       );
-                          //     } on FirebaseAuthException catch (e) {
-                          //       print(
-                          //         "<------------------------------${e.code}---------------------------->",
-                          //       );
-                          //       if (e.code == "email-already-in-use") {
-                          //         ScaffoldMessenger.of(context).showSnackBar(
-                          //           SnackBar(
-                          //             content: Text("Email already exists"),
-                          //           ),
-                          //         );
-                          //       }
-                          //     } catch (e) {
-                          //       print(
-                          //         "error while signing up ========================> ${e.toString()}",
-                          //       );
-                          //     }
-                          //   }
-                          // },
+                                final userID = user.user!;
+
+                                await userID.sendEmailVerification();
+
+
+                                // todo store the user in firebase
+                                await FirebaseFirestore.instance
+                                    .collection("users")
+                                    .doc(userID.uid)
+                                    .set({
+                                  "fullName": fullNameController.text.trim(),
+                                  "email": emailController.text.trim(),
+                                  "name": fullNameController.text.trim(),
+                                });
+
+                                // todo : go to home screen || Success Sign in
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => HomeScreen(),
+                                  ),
+                                      (predicate) => false,
+                                );
+                              } on FirebaseAuthException catch (e) {
+                                print(
+                                  "<------------------------------${e.code}---------------------------->",
+                                );
+                                if (e.code == "email-already-in-use") {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Email already exists"),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                print(
+                                  "error while signing up ========================> ${e.toString()}",
+                                );
+                              }
+                            }
+                          },
                           child: Text(
                             "Sign Up",
                             style: TextStyle(fontSize: 20),

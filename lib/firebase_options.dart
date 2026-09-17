@@ -56,7 +56,6 @@ class DefaultFirebaseOptions {
     projectId: 'uber-cbd5f',
     storageBucket: 'uber-cbd5f.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAU_xeZFhYddbqKa9Fzfo2FQbUB42NgFYk',
     appId: '1:778289328915:ios:e7f1834756fdbb9293a0e6',
