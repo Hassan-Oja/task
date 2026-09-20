@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:uber/API/firebase_manager.dart';
 import 'package:uber/Screens/signin_screen.dart';
-
 import '../widgets/custom_text_field.dart';
+import 'email_verification_screen.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -73,17 +74,26 @@ class LoginScreen extends StatelessWidget {
                   onPressed: () async {
                     final isValid = _formKey.currentState!.validate();
                     if (isValid) {
-                      try {
-                        await FirebaseAuth.instance.signInWithEmailAndPassword(
-                          email: emailController.text,
-                          password: passwordController.text,
+                      try{
+                        await FirebaseManager.loginUser(
+                            emailController.text,
+                            passwordController.text
                         );
-                        // todo : go to home screen || Success login
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                              (predicate) => false,
-                        );
+
+                        if(FirebaseAuth.instance.currentUser!.emailVerified){
+
+                          Navigator.pushAndRemoveUntil(context,
+                              MaterialPageRoute(builder:(context) => HomeScreen(),),
+                                  (route) => false
+                          );
+
+                        }else{
+
+                          Navigator.pushAndRemoveUntil(context,
+                              MaterialPageRoute(builder:(context) => EmailVerificationScreen(),),
+                                  (route) => false
+                          );
+                        }
                       } on FirebaseAuthException catch (e) {
                         print("--------------------${e.code}--------------");
                         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:uber/Screens/home_screen.dart';
-
+import 'package:uber/API/firebase_manager.dart';
 import '../widgets/custom_text_field.dart';
+import 'email_verification_screen.dart';
 import 'login_screen.dart';
 
 class SigninScreen extends StatelessWidget {
@@ -13,6 +13,7 @@ class SigninScreen extends StatelessWidget {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+   bool isWaitingForVerification = false;
 
   @override
   Widget build(BuildContext context) {
@@ -112,32 +113,18 @@ class SigninScreen extends StatelessWidget {
                             final isValid = _formKey.currentState!.validate();
                             if (isValid) {
                               try {
-                                final user = await FirebaseAuth.instance
-                                    .createUserWithEmailAndPassword(
-                                  email: emailController.text.trim(),
-                                  password: passwordController.text,
+                                final user = await FirebaseManager.createUser(
+                                  fullNameController.text,
+                                  emailController.text,
+                                  passwordController.text,
                                 );
-
-                                final userID = user.user!;
-
-                                await userID.sendEmailVerification();
-
-
-                                // todo store the user in firebase
-                                await FirebaseFirestore.instance
-                                    .collection("users")
-                                    .doc(userID.uid)
-                                    .set({
-                                  "fullName": fullNameController.text.trim(),
-                                  "email": emailController.text.trim(),
-                                  "name": fullNameController.text.trim(),
-                                });
+                                await FirebaseManager.sendVerificationEmail();
 
                                 // todo : go to home screen || Success Sign in
                                 Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => HomeScreen(),
+                                    builder: (context) => EmailVerificationScreen(),
                                   ),
                                       (predicate) => false,
                                 );
